@@ -25,22 +25,22 @@ the device name mentioned. E.g: if COM6 is associated with the device, the
 function will return COM6
  
 """
-import serial                                #for serial communication
-import serial.tools.list_ports
-import xlsxwriter as xl
-from datetime import date
-from datetime import datetime
-import time
+import serial                                                                   #serial library for serial communication
+import serial.tools.list_ports                                                
+import xlsxwriter as xl                                                         #Importing xlsxwriter for ability to create and manipulate excel files
+from datetime import date                                                       #Importing date from datetime library
+from datetime import datetime 
+import time                                                                     #Importing time library for utilizing time.delay() method    
 today = date.today()
 Date_formatted = today.strftime("%b-%d-%Y")
 filename = 'Tempdata_%s.xlsx'%(Date_formatted)
-workbook = xl.Workbook(filename)
-worksheet = workbook.add_worksheet()
-def get_ports():
+workbook = xl.Workbook(filename)                                                #Defining excel workbook with a name contained in the string filename variable
+worksheet = workbook.add_worksheet()                                            #Adding worksheet to the excel workbook we just created 
+def get_ports():                                                                #Defining get_ports() method for receiving all active com ports
     ports = serial.tools.list_ports.comports()
     return ports
 
-def findarduino(portsFound):
+def findarduino(portsFound):                                                    #Defining method to find a speficic device
     commport = 'None'
     numconnections = len(portsFound)
     
@@ -54,8 +54,8 @@ def findarduino(portsFound):
     print('Value of commport variable being returned by findarduino() function is '+ commport)
     return commport 
 
-portsfound = get_ports()
-connectport = findarduino(portsfound)
+portsfound = get_ports()                                                        #Using the get_ports() method to get open ports
+connectport = findarduino(portsfound)                                           #Using findarduino() method to connect to the com port which is specific to the arduino by passing portsfound as an input.
 print('Trying to connect to ' + connectport)
 if connectport != 'None':
     ser = serial.Serial(connectport, baudrate = 9600,timeout=1)
@@ -65,27 +65,27 @@ else:
     
 print('Done')
 try:
-    for i in range(0,60):
+    for i in range(0,3):
             incoming = ser.inWaiting()                                          #Number of incoming bytes in buffer
-            message = ser.read(1)                                               #Reading 1 byte
-            message = int.from_bytes(message, 'little')                         #Added this from https://stackoverflow.com/questions/45010682/how-can-i-convert-bytes-object-to-decimal-or-binary-representation-in-python
+            temperature = ser.read(1)                                           #Reading 1 byte
+            temperature = int.from_bytes(temperature, 'little')                 #Added this from https://stackoverflow.com/questions/45010682/how-can-i-convert-bytes-object-to-decimal-or-binary-representation-in-python
             print("The number of bytes in serial buffer is " + str(incoming))   #Printing the number of bytes
-            print(message)                                                      #Printing the temperature
+            print(temperature)                                                  #Printing the temperature
             now = datetime.now()
             current_time = now.strftime('%H:%M:%S')
-            column_name_1 = 'A%i'%(i+1)
-            column_name_2 = 'B%i'%(i+1)
-            worksheet.write(column_name_1,current_time)
-            worksheet.write(column_name_2,message)
+            column_name_1 = 'A%i'%(i+1)                                         #indexing position in colum A for storing time stamp
+            column_name_2 = 'B%i'%(i+1)                                         #indexing position in column B for storing temperature data
+            worksheet.write(column_name_1,current_time)                         #Writing timestamp to worksheet
+            worksheet.write(column_name_2,temperature)                          #Writing temperature to the workbook
             time.sleep(6)                                                       #Sample time should match that of the arduino
     '''
     When the sampling rate of the python script is higher than that of the TX rate of the arduino, sample points in between 
     the arduino TX pings will be an empty buffer and provide a value of 0. Similarly if the sampling rate of the python script
     is lower than the arduino, then the serial buffer gets filled up and would lead to delayed and NON REAL TIME updates.
-    The solution is to match the sample rates of both the systems. Also we could check for the bytes in the buffer.
+    It is important to match is to match the sample rates of both the systems. Also we could check for the bytes in the buffer.
     
     '''
-except KeyboardInterrupt:
+except KeyboardInterrupt:                                                       #Keyboard interrupt for terminating execution when ctrl + c is pressed
     print('Terminating loop')
     pass
 workbook.close()

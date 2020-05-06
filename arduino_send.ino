@@ -1,8 +1,8 @@
 /******************************************
- *Website: www.elegoo.com
- * 
- *Time:2017.12.12
- *THIS CODE WILL WORK ONLY WITH THE PYTHON SCRIPT NAMED "D:\Vishal\Arduino experiments\findarduino.py"
+ *The sensor was ordered from: www.elegoo.com
+ *Author: Vishal Shanbhag
+ *Time:2020.May.04
+ *THIS CODE WILL WORK WITH THE PYTHON SCRIPT NAMED "findarduino.py" ON THE RECEIVING SIDE
  *We are writing to the serial monitor the temperature in °C which has been received from the DS18B20 sensor.
  ******************************************/
 // Include the libraries we need
@@ -24,14 +24,6 @@ bool Status;
 /*
  * The setup function. We only start the sensors here
  */
-
- /*
-  
-  */
-typedef union{
-  float floatingPoint;
-  byte binary[4];
-}binaryFloat;
 void setup(void)
 {
   // start serial port
@@ -40,50 +32,19 @@ void setup(void)
 
   // Start up the library
   sensors.begin();
-  
-  //float starttime = 09.30;
-  //Serial.print("The time a which we staretd monitoring is ");
-  //Serial.println(starttime);
 }
 
 /*
- * Main function, get and show the temperature
+ * Main function, get and send the temperature across the serial bus
  */
 void loop(void)
 { 
   // call sensors.requestTemperatures() to issue a global temperature 
   // request to all devices on the bus
-  //Serial.print("Requesting temperatures...");
   sensors.requestTemperatures(); // Send the command to get temperatures
   //Serial.println("DONE");
-  float temperatureF = (sensors.getTempCByIndex(0)*9/5) + 32; // This is the temperature in Farenheit
-  int temperatureD = (sensors.getTempCByIndex(0)); // This is the temperature in degree celcius.
-  // After we got the temperatures, we can print them here.
-  // We use the function ByIndex, and as an example get the temperature from the first sensor only.
-  //Serial.print("Temperature for the device 1 (index 0) is: ");
-  //Serial.print(temperatureF);
-  //Serial.print("°F & ");
-  //Serial.print(temperatureD);
-  //Serial.print("°C time elapsed in minutes is : ");
-  //Serial.println(Time);
-  Status = Serial.availableForWrite();
-
-  //binaryFloat hi;
-  //hi.floatingPoint = temperatureD;
-  //Serial.write(hi.binary[3]);
-  Serial.write(temperatureD);
-  //Serial.println(hi.binary[3]);
-  //Serial.write(hi.binary[2]);
-  //Serial.println(hi.binary[2]);
-  //Serial.write(hi.binary[1]);
-  //Serial.println(hi.binary[1]);
-  //Serial.write(hi.binary[0]);
-  //Serial.println(hi.binary[0]);
-  //Serial.println(temperatureD);
-  /*Serial.print(hi.binary[0]);
-  Serial.print(hi.binary[1]);
-  Serial.print(hi.binary[2]);
-  Serial.println(hi.binary[3]);
-  */
-  delay(6000);
+  int temperatureF = (sensors.getTempCByIndex(0)*9/5) + 32; // This is the temperature in Farenheit
+  int temperatureD = (sensors.getTempCByIndex(0));          // This is the temperature in degree celcius.
+  Serial.write(temperatureD);                               // Writing temperatureD to serial port
+  delay(6000);                                              // Delay of 6000 ms i.e 6 seconds. The same sample time needs to be set in the Python script on the receiving side.
 }
